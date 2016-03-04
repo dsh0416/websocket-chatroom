@@ -3,7 +3,7 @@ require 'sinatra-websocket'
 require 'json'
 
 user = {}
-chat_room_sockets = Hash.new
+chat_room_sockets = Hash.new{|h, k| h[k] = []}
 
 post '/login' do
   # Login or register
@@ -23,11 +23,6 @@ end
 get '/room' do
   # Get room list
   JSON.generate chat_room_sockets.each_key.to_a
-end
-
-post '/room/:id/new' do |id|
-  # Create a room
-  chat_room_sockets[id] = [] unless chat_room_sockets.include? id
 end
 
 get '/room/:id' do |id|
