@@ -39,3 +39,7 @@ get '/room/:id' do |id|
     end
   end
 end
+
+get '/' do
+  redirect '/index.html'
+end
