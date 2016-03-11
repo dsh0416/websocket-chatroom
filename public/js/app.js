@@ -32,7 +32,7 @@ $(document).ready(function() {
     ws.onopen    = function()  {};
     ws.onclose   = function()  {};
     ws.onmessage = function(m) {
-        vueApp.message.push(m.data);
+        vueApp.message = vueApp.message.concat(JSON.parse(m.data));
     };
 
 });

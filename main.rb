@@ -1,9 +1,12 @@
 require 'sinatra'
 require 'sinatra-websocket'
 require 'json'
+require './database.rb'
 
-user = {}
 chat_room_sockets = Hash.new{|h, k| h[k] = []}
+database = Database.new('./database/default.json')
+user = database.user
+history = database.history
 
 post '/login' do
   # Login or register
@@ -16,6 +19,7 @@ post '/login' do
     end
   else
     user[data['username']] = data['password']
+    database.save
     return JSON.generate({result: 1})
   end
 end
@@ -30,9 +34,18 @@ get '/room/:id' do |id|
   request.websocket do |ws|
     ws.onopen do
       chat_room_sockets[id] << ws
+      EM.next_tick do
+        ws.send(JSON.generate(history))
+      end
     end
     ws.onmessage do |msg|
-      EM.next_tick { chat_room_sockets[id].each{|s| s.send(msg) } }
+      EM.next_tick do
+        history << msg
+        database.save
+        chat_room_sockets[id].each do |s|
+          s.send(JSON.generate([msg]))
+        end
+      end
     end
     ws.onclose do
       chat_room_sockets[id].delete(ws)
