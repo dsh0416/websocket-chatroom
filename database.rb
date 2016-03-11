@@ -1,17 +1,34 @@
+require 'sqlite3'
+
 class Database
-  attr_accessor :user, :history, :url
-  def initialize(url)
-    file = File.open(url,'r+')
-    data = JSON.parse(file.readlines[0])
-    @user = data['user']
-    @history = data['history']
-    @url = url
-    file.close
+  def initialize(db_file)
+    @db = SQLite3::Database.new db_file
   end
-  def save
-    file = File.open(@url, 'w+')
-    data = {user: @user, history: @history}
-    file.write(JSON.generate(data))
-    file.close
+
+  def initialize_data
+    initialized = @db.get_first_value <<-SQL
+      select name from sqlite_master where type='table'
+    SQL
+    if initialized == 'history'
+      @db.execute <<-SQL
+        create table history (
+         room_id int,
+         msg varchar(8000)
+        )
+      SQL
+    end
+  end
+
+  def insert_msg(room_id, msg)
+    @db.execute('INSERT INTO history (room_id, msg)
+                 VALUES (?, ?)', [room_id, msg])
+  end
+
+  def select_history(room_id)
+    @db.execute('select msg from history where room_id == ?', [room_id])
+  end
+
+  def close
+    @db.close
   end
 end

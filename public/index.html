@@ -16,9 +16,8 @@
             </li>
         </ul>
         <div v-show="!has_login">
-            <input v-model="username">
-            <input v-model="password">
-            <button v-on:click="login()">登录</button>
+            <input v-model="nickname">
+            <button v-on:click="confirm()">确认</button>
         </div>
         <div v-show="has_login">
             <input v-model="messageToSend"><button v-on:click="send()">发送</button>
