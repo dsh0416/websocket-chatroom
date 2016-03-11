@@ -20,8 +20,8 @@ class Database
   end
 
   def insert_msg(room_id, msg)
-    @db.execute('INSERT INTO history (room_id, msg)
-                 VALUES (?, ?)', [room_id, msg])
+    @db.execute('insert into history (room_id, msg)
+                 values (?, ?)', [room_id, msg])
   end
 
   def select_history(room_id)
