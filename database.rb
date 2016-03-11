@@ -9,7 +9,7 @@ class Database
     initialized = @db.get_first_value <<-SQL
       select name from sqlite_master where type='table'
     SQL
-    if initialized == 'history'
+    unless initialized == 'history'
       @db.execute <<-SQL
         create table history (
          room_id int,
