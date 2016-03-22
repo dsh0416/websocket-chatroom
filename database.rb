@@ -13,7 +13,7 @@ class Database
       @db.execute <<-SQL
         create table history (
          room_id int,
-         msg varchar(8000)
+         msg text
         )
       SQL
     end
