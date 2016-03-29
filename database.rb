@@ -16,6 +16,13 @@ class Database
          msg text
         )
       SQL
+
+      @db.execute <<-SQL
+        create table users (
+          username text,
+          password text
+        )
+      SQL
     end
   end
 
@@ -26,6 +33,14 @@ class Database
 
   def select_history(room_id)
     @db.execute('select msg from history where room_id == ?', [room_id])
+  end
+
+  def search_user(username)
+    @db.execute('select password from users where username == ?', [username])
+  end
+
+  def insert_user(username, password)
+    @db.execute('insert into users (username, password) values (?, ?)', [username, password])
   end
 
   def close
