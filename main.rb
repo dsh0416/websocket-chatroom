@@ -1,7 +1,10 @@
 require 'sinatra'
-require 'sinatra-websocket'
+require 'faye/websocket'
 require 'json'
 require './database.rb'
+
+configure {set :server, :puma}
+Faye::WebSocket.load_adapter('puma')
 
 chat_room_sockets = Hash.new{|h, k| h[k] = []}
 db = Database.new ':memory:'
@@ -14,25 +17,26 @@ end
 
 get '/room/:id' do |id|
   # Enter a room
-  request.websocket do |ws|
-    ws.onopen do
-      chat_room_sockets[id] << ws
-      EM.next_tick do
-        ws.send(JSON.generate(db.select_history(id)))
-      end
-    end
-    ws.onmessage do |msg|
-      EM.next_tick do
-        db.insert_msg(id, msg)
-        chat_room_sockets[id].each do |s|
-          s.send(JSON.generate([msg]))
-        end
-      end
-    end
-    ws.onclose do
-      chat_room_sockets[id].delete(ws)
+  ws = Faye::WebSocket.new(request.env)
+
+  ws.on :open do |event|
+    chat_room_sockets[id] << ws
+    ws.send(JSON.generate(db.select_history(id)))
+  end
+
+  ws.on :message do |event|
+    msg = event.data
+    db.insert_msg(id, msg)
+    chat_room_sockets[id].each do |s|
+      s.send(JSON.generate([msg]))
     end
   end
+
+  ws.on :close do |event|
+    chat_room_sockets[id].delete(ws)
+  end
+
+  ws.rack_response
 end
 
 get '/' do
