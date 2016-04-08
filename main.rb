@@ -15,6 +15,22 @@ get '/room' do
   JSON.generate chat_room_sockets.each_key.to_a
 end
 
+post '/login' do
+  req = JSON.parse(request.body.read)
+  # If username exists
+  sql = db.search_user(req['username'])
+  if sql == []
+    db.insert_user(req['username'], req['password'])
+    return JSON.generate({result: 1})
+  else
+    if sql[0][0] == req['password']
+      return JSON.generate({result: 1})
+    else
+      return JSON.generate({result: -1})
+    end
+  end
+end
+
 get '/room/:id' do |id|
   # Enter a room
   ws = Faye::WebSocket.new(request.env)

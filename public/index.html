@@ -17,6 +17,7 @@
         </ul>
         <div v-show="!has_login">
             <input v-model="nickname">
+            <input v-model="password">
             <button v-on:click="confirm()">确认</button>
         </div>
         <div v-show="has_login">
